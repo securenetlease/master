@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Property Listings Map</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2330;
+    --border: rgba(255,255,255,0.08);
+    --text: #e8eaf0;
+    --text-muted: #7a8099;
+    --accent: #4f8ef7;
+    --accent2: #f7a44f;
+    --radius: 10px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    z-index: 1000;
+    flex-shrink: 0;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
+  }
+
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+
+  .subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+
+  /* ── Controls ── */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  label.filter-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  select {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 28px 6px 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a8099' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    cursor: pointer;
+    min-width: 170px;
+    transition: border-color 0.2s;
+  }
+
+  select:hover, select:focus {
+    border-color: var(--accent);
+    outline: none;
+  }
+
+  .count-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .count-badge span {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ── Map ── */
+  #map {
+    flex: 1;
+    width: 100%;
+  }
+
+  /* ── Legend ── */
+  #legend {
+    position: absolute;
+    bottom: 28px;
+    right: 10px;
+    z-index: 900;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    max-height: 320px;
+    overflow-y: auto;
+    box-shadow: var(--shadow);
+    min-width: 180px;
+  }
+
+  #legend h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 12px;
+    color: var(--text);
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+
+  .legend-item:hover { background: var(--surface2); }
+
+  .legend-dot {
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.25);
+  }
+
+  /* ── Loading overlay ── */
+  #loading {
+    position: absolute;
+    inset: 0;
+    background: rgba(15,17,23,0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    gap: 16px;
+    backdrop-filter: blur(4px);
+  }
+
+  #loading.hidden { display: none; }
+
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #loading p {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ── Error banner ── */
+  #error-banner {
+    display: none;
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2000;
+    background: #3d1c1c;
+    border: 1px solid #e05252;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 13px;
+    color: #f4a0a0;
+    max-width: 500px;
+    text-align: center;
+  }
+
+  /* ── Leaflet popup override ── */
+  .leaflet-popup-content-wrapper {
+    background: var(--surface) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
+    box-shadow: var(--shadow) !important;
+    padding: 0 !important;
+  }
+
+  .leaflet-popup-tip {
+    background: var(--surface) !important;
+  }
+
+  .leaflet-popup-content {
+    margin: 0 !important;
+    font-family: 'DM Sans', sans-serif !important;
+    min-width: 240px !important;
+  }
+
+  .popup-inner {
+    padding: 16px 18px;
+  }
+
+  .popup-tenant-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #fff;
+    letter-spacing: 0.03em;
+  }
+
+  .popup-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+
+  .popup-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 5px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .popup-key {
+    color: var(--text-muted);
+    font-weight: 500;
+    min-width: 90px;
+    flex-shrink: 0;
+  }
+
+  .popup-val {
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  .popup-link {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 6px 14px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+
+  .popup-link:hover { opacity: 0.85; }
+
+  .leaflet-container { background: #f0ede4; }
+
+  /* scrollbar */
+  #legend::-webkit-scrollbar { width: 4px; }
+  #legend::-webkit-scrollbar-track { background: transparent; }
+  #legend::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ── Search ── */
+  .search-group { position: relative; }
+  .search-wrap { position: relative; display: flex; align-items: center; }
+  .search-icon { position: absolute; left: 10px; width: 14px; height: 14px; color: var(--text-muted); pointer-events: none; z-index: 1; }
+  #search-input { background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 6px 28px 6px 32px; font-family: 'DM Sans', sans-serif; font-size: 13px; width: 240px; transition: border-color 0.2s, width 0.2s; }
+  #search-input:focus { border-color: var(--accent); outline: none; width: 280px; }
+  #search-input::placeholder { color: var(--text-muted); }
+  #search-clear { position: absolute; right: 8px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 11px; padding: 2px 4px; display: none; line-height: 1; }
+  #search-clear:hover { color: var(--text); }
+  #search-dropdown { position: absolute; top: calc(100% + 6px); left: 0; width: 320px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); z-index: 2000; max-height: 280px; overflow-y: auto; display: none; }
+  #search-dropdown.visible { display: block; }
+  .search-result { padding: 9px 14px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  .search-result:last-child { border-bottom: none; }
+  .search-result:hover { background: var(--surface2); }
+  .search-result-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .search-result-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .search-result-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; flex-shrink: 0; }
+  .search-section-header { padding: 6px 14px 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); background: var(--surface); border-bottom: 1px solid var(--border); }
+  #search-dropdown::-webkit-scrollbar { width: 4px; }
+  #search-dropdown::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ── Sold/Dead Toggle Switch ── */
+  .layer-toggle-wrap { display: flex; align-items: center; gap: 8px; }
+  .layer-toggle-label { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; }
+  .layer-switch { position: relative; width: 40px; height: 22px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; cursor: pointer; transition: background 0.25s, border-color 0.25s; padding: 0; flex-shrink: 0; }
+  .layer-switch.on { background: var(--accent); border-color: var(--accent); }
+  .layer-switch-thumb { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: transform 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.3); display: block; }
+  .layer-switch.on .layer-switch-thumb { transform: translateX(18px); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-dot"></div>
+    <div>
+      <h1>Property Listings Map</h1>
+      <div class="subtitle">Live data from master sheet</div>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="control-group search-group">
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M10 10l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <input type="text" id="search-input" placeholder="Search properties or cities…" autocomplete="off" />
+        <button id="search-clear" title="Clear">✕</button>
+        <div id="search-dropdown"></div>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="filter-label" for="tenant-filter">Tenant</label>
+      <select id="tenant-filter">
+        <option value="">All Tenants</option>
+      </select>
+    </div>
+    <div class="count-badge">Showing <span id="count">–</span> properties</div>
+    <div class="layer-toggle-wrap">
+      <span class="layer-toggle-label">Sold / Dead</span>
+      <button id="layer-toggle" class="layer-switch" onclick="toggleSoldDeadLayer()" title="Toggle Sold & Dead properties">
+        <span class="layer-switch-thumb"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; flex:1; display:flex; flex-direction:column;">
+  <div id="map"></div>
+  <div id="loading"><div class="spinner"></div><p>Loading property data…</p></div>
+  <div id="error-banner"></div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbzt7MS2aMQ8YWCYooqjAeShpAPcz3u1dkfkPdvjiJ4wIxapUqXWWWt3WQ0WHvkmoWx-/exec";
+
+// Tenant → color map
+const TENANT_COLORS = {
+  "Circle K":                   "#e8334a",
+  "7-Eleven":                   "#f7a44f",
+  "Valvoline":                  "#e8c234",
+  "Jiffy Lube":                 "#b5d234",
+  "7 Brew":                     "#4fdbf7",
+  "Caribou Coffee":             "#a07850",
+  "Chipotle":                   "#c84b2e",
+  "Bojangles":                  "#e87c34",
+  "Starbucks":                  "#00a862",
+  "Burger King":                "#c8392b",
+  "Firestone":                  "#c8251e",
+  "Dollar General":             "#f7dc4f",
+  "Pearland Commons":           "#a34ff7",
+  "Outback Steakhouse":         "#8b4513",
+  "9063 Research Blvd":         "#708090",
+  "CVS":                        "#cc0000",
+  "Beaumont Plaza":             "#9b59b6",
+  "Chick-fil-A":                "#e4002b",
+  "Texas Star Plaza":           "#1a6db5",
+  "Gulfway Plaza":              "#0e8c8c",
+  "Whataburger":                "#f47721",
+  "Casey's":                    "#e8344a",
+  "Murphy USA":                 "#ff6600",
+  "Cheddar's Scratch Kitchen":  "#6db560",
+  "Tyler's":                    "#3d7ab5",
+  "Take 5 Oil":                 "#2ecc71",
+  "Gaston Place Shopping Center":"#8e44ad",
+  "BreWingz":                   "#e74c3c",
+  "Hardee's":                   "#c0392b",
+  "Black Bear Diner":           "#2c3e50",
+  "Dollar General Market":      "#d4c200",
+};
+
+const DEFAULT_COLOR = "#4f8ef7";
+
+// Tenant → custom PNG icon URL (add more as you get them)
+const TENANT_ICONS = {
+  "Starbucks":              "https://www.dropbox.com/scl/fi/waejltasfzizazyu507tk/Starbucks.png?rlkey=q25x5nj3d2h18b4iamxavx4hb&raw=1",
+  "7 Brew":                 "https://www.dropbox.com/scl/fi/pu8py0f2zku0n75c4d10s/7-Brew.png?rlkey=65l7lz9q7l81kzzdxib2vhojc&raw=1",
+  "7 Brew Coffee":          "https://www.dropbox.com/scl/fi/pu8py0f2zku0n75c4d10s/7-Brew.png?rlkey=65l7lz9q7l81kzzdxib2vhojc&raw=1",
+  "7-Eleven":               "https://www.dropbox.com/scl/fi/zel98l1g7yonq7rd0ejgw/7-Eleven.png?rlkey=poec42ni43qodpamzwl8ue4zs&raw=1",
+  "Advance Auto":           "https://www.dropbox.com/scl/fi/3dyezgwgntkeygah6i9fs/Advance-Auto.png?rlkey=rtpf0ver7n8xqlrmxaha29ido&raw=1",
+  "Advance Auto Parts":     "https://www.dropbox.com/scl/fi/3dyezgwgntkeygah6i9fs/Advance-Auto.png?rlkey=rtpf0ver7n8xqlrmxaha29ido&raw=1",
+  "Aspen Dental":           "https://www.dropbox.com/scl/fi/yfgltqmp35d6274aegzts/Aspen-Dental.png?rlkey=7v0r5b4ld8vy74f16zk39jxm6&raw=1",
+  "Banfield Pet Hospital":  "https://www.dropbox.com/scl/fi/nlm9fgf1ocoiqgvoruml1/Banfield-Pet-Hospital.png?rlkey=loz6ntfxakahrewnvp7vrclsl&raw=1",
+  "Buffalo Wild Wings":     "https://www.dropbox.com/scl/fi/f9r26e09myn9uu4xtoqfv/Buffalo-Wild-Wings.png?rlkey=chfwy2rp3v68us5pj5xbe1qtu&raw=1",
+  "Caribou":                "https://www.dropbox.com/scl/fi/97tpm5rormo8mv8q93bup/Caribou-Coffee.png?rlkey=cggzse1ep9zgqpzuou6axc7fy&raw=1",
+  "Caribou Coffee":         "https://www.dropbox.com/scl/fi/97tpm5rormo8mv8q93bup/Caribou-Coffee.png?rlkey=cggzse1ep9zgqpzuou6axc7fy&raw=1",
+  "Chipotle":               "https://www.dropbox.com/scl/fi/egn5qkhobqhmxcrea7jso/Chipotle.png?rlkey=1r1gmukfo39bkit7d4p42d2jp&raw=1",
+  "Circle K":               "https://www.dropbox.com/scl/fi/x71wqlpk73jxtw1t73tk2/Circle-K.png?rlkey=n27kkfgjnmb31o86qn89lqnyq&raw=1",
+  "Kindercare":             "https://www.dropbox.com/scl/fi/1qfrr3qfn66xgn1cnquce/Kindercare.png?rlkey=6x4lhe9bdu47gu9cn47ekehqx&raw=1",
+  "Portillo's":            "https://www.dropbox.com/scl/fi/pzmzghz8148v8vza6ky2b/Portillo-s.png?rlkey=iofz2wxssop1fyzh7i62chw6b&raw=1",
+  "Salad & Go":             "https://www.dropbox.com/scl/fi/yk4irx4ejfhsjjs1j6w3v/Salad-Go.png?rlkey=0ctjb2h8kw6gkbt25y0bip0z9&raw=1",
+  "Salad and Go":           "https://www.dropbox.com/scl/fi/yk4irx4ejfhsjjs1j6w3v/Salad-Go.png?rlkey=0ctjb2h8kw6gkbt25y0bip0z9&raw=1",
+  "Tractor Supply":         "https://www.dropbox.com/scl/fi/222z24fc6h1nfa12nhibz/Tractor-Supply.png?rlkey=3klu76kieszgf9v2dm3k7e66w&raw=1",
+  "Shake Shack":            "https://www.dropbox.com/scl/fi/fk0bjd3vq7szkeie5s4m8/Shake-Shack.png?rlkey=x9dlmha1gp7s3ug5qh7n11bqp&raw=1",
+  "9063 Research Blvd":     "https://www.dropbox.com/scl/fi/jh286sug00hlvqiokcj5e/No-Logo.png?rlkey=escmi77fbtpwaazrk5mr2ruod&raw=1",
+  "Beaumont Plaza":          "https://www.dropbox.com/scl/fi/jh286sug00hlvqiokcj5e/No-Logo.png?rlkey=escmi77fbtpwaazrk5mr2ruod&raw=1",
+  "Black Bear Diner":        "https://www.dropbox.com/scl/fi/rhgg6h4bgyiqdxmv3cwlf/Black-Bear-Diner.png?rlkey=2pag4ndlkv4f714yxadv00dx2&raw=1",
+  "Texas Roadhouse":         "https://www.dropbox.com/scl/fi/qari9rpshma5ost25kq95/Texas-Roadhouse.png?rlkey=tfcazg4wq47njunrxadvt59fl&raw=1",
+};
+
+function normalizeTenant(tenant) {
+  if (!tenant) return tenant;
+  const t = tenant.trim().toLowerCase();
+  if (t.includes('7-eleven') || t.includes('7 eleven')) return '7-Eleven';
+  if (t.includes('7 brew') || t.includes('7brew')) return '7 Brew';
+  return tenant.trim();
+}
+
+function tenantColor(tenant) {
+  if (!tenant) return DEFAULT_COLOR;
+  for (const key of Object.keys(TENANT_COLORS)) {
+    if (tenant.trim().toLowerCase() === key.toLowerCase()) return TENANT_COLORS[key];
+  }
+  return DEFAULT_COLOR;
+}
+
+// ─────────────────────────────────────────────
+// MAP INIT
+// ─────────────────────────────────────────────
+const map = L.map('map', { zoomControl: true }).setView([38.5, -96.0], 5);
+
+L.tileLayer('https://{s}.tile.thunderforest.com/atlas/{z}/{x}/{y}.png?apikey=458764e6731a44a6a283cf4994b3e2fe', {
+  attribution: '© <a href="https://www.thunderforest.com/">Thunderforest</a>, © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: 22
+}).addTo(map);
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let allData  = [];
+let soldData = [];
+let deadData = [];
+let markerLayer = L.layerGroup().addTo(map);
+
+// ─────────────────────────────────────────────
+// FETCH DATA
+// ─────────────────────────────────────────────
+async function loadData() {
+  showLoading(true);
+  try {
+    const res = await fetch(SHEET_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (json.master) {
+      allData  = json.master;
+      soldData = json.sold || [];
+      deadData = json.dead || [];
+    } else {
+      allData  = Array.isArray(json) ? json : (json.data || json.rows || []);
+      soldData = [];
+      deadData = [];
+    }
+    buildTenantFilter();
+    renderMarkers();
+  } catch (err) {
+    showError("Failed to load data: " + err.message + ". Check the Apps Script URL and CORS settings.");
+    document.getElementById('count').textContent = '0';
+  } finally {
+    showLoading(false);
+  }
+}
+
+// ─────────────────────────────────────────────
+// ROBUST FIELD GETTER
+// ─────────────────────────────────────────────
+function getField(row, ...candidates) {
+  for (const key of Object.keys(row)) {
+    const norm = key.trim().toLowerCase();
+    for (const c of candidates) {
+      if (norm === c.trim().toLowerCase()) {
+        return (row[key] || '').toString().trim();
+      }
+    }
+  }
+  return '';
+}
+
+// ─────────────────────────────────────────────
+// PARSE LAT/LNG  — "33.213, -96.662"
+// ─────────────────────────────────────────────
+function parseLatLng(raw) {
+  if (!raw) return null;
+  const parts = String(raw).split(',').map(s => parseFloat(s.trim()));
+  if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+    return { lat: parts[0], lng: parts[1] };
+  }
+  return null;
+}
+
+// ─────────────────────────────────────────────
+// RENDER MARKERS
+// ─────────────────────────────────────────────
+function renderMarkers() {
+  markerLayer.clearLayers();
+  const filterVal = document.getElementById('tenant-filter').value.toLowerCase();
+
+  const filtered = allData.filter(row => {
+    const tenant = normalizeTenant(getField(row, 'Tenant'));
+    const ll = parseLatLng(getField(row, 'Lat/Long', 'Lat/ Long', 'LatLong', 'lat/long', 'Lat Long'));
+    if (!ll) return false;
+    if (filterVal && tenant.toLowerCase() !== filterVal) return false;
+    return true;
+  });
+
+  document.getElementById('count').textContent = filtered.length;
+  if (typeof updateCount === 'function') setTimeout(updateCount, 0);
+
+  filtered.forEach(row => {
+    const ll = parseLatLng(getField(row, 'Lat/Long', 'Lat/ Long', 'LatLong', 'lat/long', 'Lat Long'));
+    if (!ll) return;
+
+    const tenant     = getField(row, 'Tenant');
+    const color      = tenantColor(tenant);
+    const address    = getField(row, 'Address');
+    const city       = getField(row, 'City');
+    const state      = getField(row, 'State');
+    const fullAddress = [address, city, state].filter(Boolean).join(', ');
+    const agent      = getField(row, 'BOR', 'Broker', 'Primary Agent');
+    const activeDateRaw = getField(row, 'PROTRACK: Active Date', 'Active Date', 'Date Active');
+    let activeDate = activeDateRaw;
+    if (activeDateRaw) { const d = new Date(activeDateRaw); if (!isNaN(d)) activeDate = (d.getMonth()+1) + '/' + d.getDate() + '/' + d.getFullYear(); }
+    const status     = getField(row, 'Status', 'Listing Status', 'Marketing Status');
+    const omLink     = getField(row, 'PROTRACK: Listing Link', 'OM', 'Marketing Packages Folder');
+
+    // Use custom PNG if available, otherwise fall back to colored dot
+    const iconUrl = TENANT_ICONS[tenant] || null;
+    const icon = iconUrl
+      ? L.icon({
+          iconUrl: iconUrl,
+          iconSize: [40, 40],
+          iconAnchor: [20, 40],
+          popupAnchor: [0, -42],
+        })
+      : L.divIcon({
+          className: '',
+          html: `<div style="
+            width:14px;height:14px;
+            background:${color};
+            border-radius:50%;
+            border:2.5px solid rgba(255,255,255,0.7);
+            box-shadow:0 0 6px ${color}99, 0 2px 8px rgba(0,0,0,0.5);
+            transition:transform 0.15s;
+          "></div>`,
+          iconSize: [14, 14],
+          iconAnchor: [7, 7],
+          popupAnchor: [0, -10],
+        });
+
+    const marker = L.marker([ll.lat, ll.lng], { icon });
+
+    const omHtml = omLink
+      ? `<a class="popup-link" href="${omLink}" target="_blank" rel="noopener">Open OM ↗</a>`
+      : '';
+
+    marker.bindPopup(`
+      <div class="popup-inner">
+        <div class="popup-tenant-badge" style="background:${color};">${tenant || 'Unknown Tenant'}</div>
+        <div class="popup-title">${tenant ? tenant + (city ? ' — ' + city + (state ? ', ' + state : '') : '') : (address || 'Property')}</div>
+        <div class="popup-row"><span class="popup-key">Primary Agent</span><span class="popup-val">${agent || '—'}</span></div>
+        <div class="popup-row"><span class="popup-key">Tenant</span><span class="popup-val">${tenant || '—'}</span></div>
+        <div class="popup-row"><span class="popup-key">Address</span><span class="popup-val">${fullAddress || address || '—'}</span></div>
+        <div class="popup-row"><span class="popup-key">Active Date</span><span class="popup-val">${activeDate || '—'}</span></div>
+        <div class="popup-row"><span class="popup-key">Status</span><span class="popup-val">${status || '—'}</span></div>
+        ${omHtml}
+      </div>
+    `, { maxWidth: 300 });
+
+    marker._searchData = row;
+    markerLayer.addLayer(marker);
+  });
+}
+
+// ─────────────────────────────────────────────
+// TENANT FILTER DROPDOWN
+// ─────────────────────────────────────────────
+function buildTenantFilter() {
+  const sel = document.getElementById('tenant-filter');
+  const currentVal = sel.value;
+
+  // Clear existing options except "All Tenants"
+  while (sel.options.length > 1) sel.remove(1);
+
+  // Combine data sources based on toggle state
+  const sources = [...allData];
+  if (soldDeadVisible) sources.push(...soldData, ...deadData);
+
+  // Only include tenants that have valid coordinates
+  const tenants = [...new Set(
+    sources
+      .filter(r => parseLatLng(getField(r, 'Lat/Long', 'Lat/ Long', 'LatLong', 'lat/long', 'Lat Long')))
+      .map(r => normalizeTenant(getField(r, 'Tenant')))
+      .filter(Boolean)
+  )].sort();
+
+  tenants.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.toLowerCase();
+    opt.textContent = t;
+    sel.appendChild(opt);
+  });
+
+  // Restore previous selection if still valid
+  sel.value = currentVal;
+
+  sel.addEventListener('change', () => {
+    renderMarkers();
+    if (soldDeadVisible) {
+      buildSheetLayer('sold');
+      buildSheetLayer('dead');
+      updateCount();
+    }
+  });
+}
+
+
+
+// ─────────────────────────────────────────────
+// UI HELPERS
+// ─────────────────────────────────────────────
+function showLoading(on) {
+  document.getElementById('loading').classList.toggle('hidden', !on);
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-banner');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 8000);
+}
+
+
+// ─────────────────────────────────────────────
+// SEARCH
+// ─────────────────────────────────────────────
+let searchTimeout = null;
+
+function initSearch() {
+  const input    = document.getElementById('search-input');
+  const dropdown = document.getElementById('search-dropdown');
+  const clearBtn = document.getElementById('search-clear');
+  input.addEventListener('input', () => {
+    const q = input.value.trim();
+    clearBtn.style.display = q ? 'block' : 'none';
+    clearTimeout(searchTimeout);
+    if (!q) { dropdown.classList.remove('visible'); return; }
+    renderSearchDropdown(q);
+    searchTimeout = setTimeout(() => fetchNominatim(q), 500);
+  });
+  input.addEventListener('focus', () => { const q = input.value.trim(); if (q) renderSearchDropdown(q); });
+  clearBtn.addEventListener('click', () => { input.value = ''; clearBtn.style.display = 'none'; dropdown.classList.remove('visible'); clearTimeout(searchTimeout); input.focus(); });
+  document.addEventListener('click', (e) => { if (!e.target.closest('.search-wrap')) dropdown.classList.remove('visible'); });
+}
+
+function matchesQuery(row, ql) {
+  const tenant  = normalizeTenant(getField(row, 'Tenant')).toLowerCase();
+  const address = getField(row, 'Address').toLowerCase();
+  const city    = getField(row, 'City').toLowerCase();
+  const state   = getField(row, 'State').toLowerCase();
+  return tenant.includes(ql) || address.includes(ql) || city.includes(ql) || state.includes(ql);
+}
+
+function addSearchResult(dropdown, row, label, onClickFn) {
+  const tenant  = normalizeTenant(getField(row, 'Tenant'));
+  const address = getField(row, 'Address');
+  const city    = getField(row, 'City');
+  const state   = getField(row, 'State');
+  const color   = tenantColor(tenant);
+  const fullAddress = [address, city, state].filter(Boolean).join(', ');
+  const el = document.createElement('div');
+  el.className = 'search-result';
+  el.innerHTML = `<div class="search-result-name"><span class="search-result-dot" style="background:${color};"></span>${tenant || address}${label ? `<span style="margin-left:6px;font-size:10px;padding:1px 6px;border-radius:10px;background:${label==='Sold'?'#2ecc71':'#e74c3c'};color:#fff;font-weight:600;">${label}</span>` : ''}</div><div class="search-result-sub">${fullAddress || address}</div>`;
+  el.addEventListener('click', onClickFn);
+  dropdown.appendChild(el);
+}
+
+function renderSearchDropdown(q) {
+  const dropdown = document.getElementById('search-dropdown');
+  dropdown.innerHTML = '';
+  const ql = q.toLowerCase();
+  const masterMatches = allData.filter(row => { const ll = parseLatLng(getField(row, 'Lat/Long', 'Lat/ Long', 'LatLong')); return ll && matchesQuery(row, ql); });
+  const soldMatches   = soldData.filter(row => { const ll = parseLatLng(getField(row, 'Lat/Long', 'Lat/ Long', 'LatLong')); return ll && matchesQuery(row, ql); });
+  const deadMatches   = deadData.filter(row => { const ll = parseLatLng(getField(row, 'Lat/Long', 'Lat/ Long', 'LatLong')); return ll && matchesQuery(row, ql); });
+
+  if (masterMatches.length) {
+    const hdr = document.createElement('div'); hdr.className = 'search-section-header'; hdr.textContent = 'Active Properties'; dropdown.appendChild(hdr);
+    masterMatches.slice(0, 6).forEach(row => addSearchResult(dropdown, row, null, () => { const ll = parseLatLng(getField(row, 'Lat/Long', 'Lat/ Long', 'LatLong')); map.flyTo([ll.lat, ll.lng], 15, {duration:1}); markerLayer.eachLayer(m => { if (m._searchData === row) setTimeout(() => m.openPopup(), 900); }); dropdown.classList.remove('visible'); document.getElementById('search-input').value = getField(row,'Tenant') || getField(row,'Address'); }));
+  }
+  if (soldMatches.length) {
+    const hdr = document.createElement('div'); hdr.className = 'search-section-header'; hdr.textContent = 'Sold Properties'; dropdown.appendChild(hdr);
+    soldMatches.slice(0, 4).forEach(row => addSearchResult(dropdown, row, 'Sold', () => { if (!soldDeadVisible) toggleSoldDeadLayer(); setTimeout(() => { const ll = parseLatLng(getField(row,'Lat/Long','Lat/ Long','LatLong')); if(ll) { map.flyTo([ll.lat,ll.lng],15,{duration:1}); sheetLayers.sold.eachLayer(m => { if(m._searchData===row) setTimeout(()=>m.openPopup(),900); }); } }, 400); dropdown.classList.remove('visible'); document.getElementById('search-input').value = getField(row,'Tenant')||getField(row,'Address'); }));
+  }
+  if (deadMatches.length) {
+    const hdr = document.createElement('div'); hdr.className = 'search-section-header'; hdr.textContent = 'Dead Properties'; dropdown.appendChild(hdr);
+    deadMatches.slice(0, 4).forEach(row => addSearchResult(dropdown, row, 'Dead', () => { if (!soldDeadVisible) toggleSoldDeadLayer(); setTimeout(() => { const ll = parseLatLng(getField(row,'Lat/Long','Lat/ Long','LatLong')); if(ll) { map.flyTo([ll.lat,ll.lng],15,{duration:1}); sheetLayers.dead.eachLayer(m => { if(m._searchData===row) setTimeout(()=>m.openPopup(),900); }); } }, 400); dropdown.classList.remove('visible'); document.getElementById('search-input').value = getField(row,'Tenant')||getField(row,'Address'); }));
+  }
+  const nominatimSection = document.createElement('div'); nominatimSection.id = 'nominatim-section'; dropdown.appendChild(nominatimSection);
+  dropdown.classList.add('visible');
+}
+
+async function fetchNominatim(q) {
+  const section = document.getElementById('nominatim-section');
+  if (!section) return;
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=4&addressdetails=1&q=${encodeURIComponent(q)}`, { headers: { 'Accept-Language': 'en' } });
+    const results = await res.json();
+    if (!results.length || !section.isConnected) return;
+    const hdr = document.createElement('div'); hdr.className = 'search-section-header'; hdr.textContent = 'Places'; section.appendChild(hdr);
+    results.forEach(r => { const el = document.createElement('div'); el.className = 'search-result'; el.innerHTML = `<div class="search-result-name">📍 ${r.display_name.split(',').slice(0,3).join(', ')}</div>`; el.addEventListener('click', () => { map.flyTo([parseFloat(r.lat), parseFloat(r.lon)], 13, {duration:1}); document.getElementById('search-dropdown').classList.remove('visible'); document.getElementById('search-input').value = r.display_name.split(',')[0]; }); section.appendChild(el); });
+  } catch(e) {}
+}
+
+// ─────────────────────────────────────────────
+// SOLD/DEAD LAYERS
+// ─────────────────────────────────────────────
+let sheetLayers = { sold: L.layerGroup(), dead: L.layerGroup() };
+let soldDeadVisible = false;
+
+function updateCount() {
+  const masterCount = markerLayer.getLayers().length;
+  const soldCount   = soldDeadVisible ? sheetLayers.sold.getLayers().length : 0;
+  const deadCount   = soldDeadVisible ? sheetLayers.dead.getLayers().length : 0;
+  document.getElementById('count').textContent = masterCount + soldCount + deadCount;
+}
+
+function toggleSoldDeadLayer() {
+  soldDeadVisible = !soldDeadVisible;
+  const btn = document.getElementById('layer-toggle');
+  btn.classList.toggle('on', soldDeadVisible);
+  if (soldDeadVisible) {
+    buildSheetLayer('sold');
+    buildSheetLayer('dead');
+    sheetLayers.sold.addTo(map);
+    sheetLayers.dead.addTo(map);
+  } else {
+    map.removeLayer(sheetLayers.sold);
+    map.removeLayer(sheetLayers.dead);
+  }
+  buildTenantFilter();
+  updateCount();
+}
+
+function buildSheetLayer(key) {
+  sheetLayers[key].clearLayers();
+  const filterVal = document.getElementById('tenant-filter').value.toLowerCase();
+  const allRows = key === 'sold' ? soldData : deadData;
+  const data  = filterVal ? allRows.filter(r => normalizeTenant(getField(r, 'Tenant')).toLowerCase() === filterVal) : allRows;
+  const label = key === 'sold' ? 'Sold' : 'Dead';
+  const badge = key === 'sold' ? '#2ecc71' : '#e74c3c';
+  data.forEach(row => {
+    const ll = parseLatLng(getField(row, 'Lat/Long', 'Lat/ Long', 'LatLong', 'lat/long'));
+    if (!ll) return;
+    const tenant = normalizeTenant(getField(row, 'Tenant'));
+    const color  = tenantColor(tenant);
+    const address = getField(row, 'Address');
+    const city    = getField(row, 'City');
+    const state   = getField(row, 'State');
+    const agent   = getField(row, 'BOR', 'Broker', 'Primary Agent');
+    const status  = getField(row, 'Status', 'Listing Status');
+    const omLink  = getField(row, 'OM', 'PROTRACK: Listing Link');
+    const activeDateRaw = getField(row, 'PROTRACK: Active Date', 'Active Date', 'Date Active');
+    let activeDate = activeDateRaw;
+    if (activeDateRaw) { const d = new Date(activeDateRaw); if (!isNaN(d)) activeDate = (d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear(); }
+    const fullAddress = [address, city, state].filter(Boolean).join(', ');
+    const iconUrl = TENANT_ICONS[tenant] || null;
+    const icon = iconUrl
+      ? L.icon({ iconUrl, iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -38] })
+      : L.divIcon({ className: '', html: `<div style="width:12px;height:12px;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.5);opacity:0.8;box-shadow:0 0 4px ${color}88;"></div>`, iconSize: [12,12], iconAnchor: [6,6], popupAnchor: [0,-8] });
+    const marker = L.marker([ll.lat, ll.lng], { icon });
+    marker._searchData = row;
+    const omHtml = omLink ? `<a class="popup-link" href="${omLink}" target="_blank" rel="noopener">Open OM ↗</a>` : '';
+    marker.bindPopup(`<div class="popup-inner"><div class="popup-title">${tenant ? tenant+(city?' — '+city+(state?', '+state:''):'') : (address||'Property')}</div><div style="display:inline-block;margin-bottom:8px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;background:${badge};color:#fff;">${label}</div><div class="popup-row"><span class="popup-key">Primary Agent</span><span class="popup-val">${agent||'—'}</span></div><div class="popup-row"><span class="popup-key">Address</span><span class="popup-val">${fullAddress||'—'}</span></div><div class="popup-row"><span class="popup-key">Active Date</span><span class="popup-val">${activeDate||'—'}</span></div><div class="popup-row"><span class="popup-key">Status</span><span class="popup-val">${status||'—'}</span></div>${omHtml}</div>`, { maxWidth: 300 });
+    sheetLayers[key].addLayer(marker);
+  });
+}
+
+// ─────────────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────────────
+initSearch();
+loadData();
+</script>
+</body>
+</html>
