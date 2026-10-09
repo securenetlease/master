@@ -38,7 +38,7 @@
     overflow: hidden;
   }
 
-  /* ── Header ── */
+  /* â”€â”€ Header â”€â”€ */
   header {
     display: flex;
     align-items: center;
@@ -85,7 +85,7 @@
     font-weight: 300;
   }
 
-  /* ── Controls ── */
+  /* â”€â”€ Controls â”€â”€ */
   .controls {
     display: flex;
     align-items: center;
@@ -145,13 +145,13 @@
     font-weight: 600;
   }
 
-  /* ── Map ── */
+  /* â”€â”€ Map â”€â”€ */
   #map {
     flex: 1;
     width: 100%;
   }
 
-  /* ── Legend ── */
+  /* â”€â”€ Legend â”€â”€ */
   #legend {
     position: absolute;
     bottom: 28px;
@@ -199,7 +199,7 @@
     border: 2px solid rgba(255,255,255,0.25);
   }
 
-  /* ── Loading overlay ── */
+  /* â”€â”€ Loading overlay â”€â”€ */
   #loading {
     position: absolute;
     inset: 0;
@@ -230,7 +230,7 @@
     color: var(--text-muted);
   }
 
-  /* ── Error banner ── */
+  /* â”€â”€ Error banner â”€â”€ */
   #error-banner {
     display: none;
     position: absolute;
@@ -248,7 +248,7 @@
     text-align: center;
   }
 
-  /* ── Leaflet popup override ── */
+  /* â”€â”€ Leaflet popup override â”€â”€ */
   .leaflet-popup-content-wrapper {
     background: var(--surface) !important;
     color: var(--text) !important;
@@ -334,7 +334,7 @@
   #legend::-webkit-scrollbar-track { background: transparent; }
   #legend::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-  /* ── Search ── */
+  /* â”€â”€ Search â”€â”€ */
   .search-group { position: relative; }
   .search-wrap { position: relative; display: flex; align-items: center; }
   .search-icon { position: absolute; left: 10px; width: 14px; height: 14px; color: var(--text-muted); pointer-events: none; z-index: 1; }
@@ -355,7 +355,7 @@
   #search-dropdown::-webkit-scrollbar { width: 4px; }
   #search-dropdown::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-  /* ── Sold/Dead Toggle Switch ── */
+  /* â”€â”€ Sold/Dead Toggle Switch â”€â”€ */
   .layer-toggle-wrap { display: flex; align-items: center; gap: 8px; }
   .layer-toggle-label { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; }
   .layer-switch { position: relative; width: 40px; height: 22px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; cursor: pointer; transition: background 0.25s, border-color 0.25s; padding: 0; flex-shrink: 0; }
@@ -381,8 +381,8 @@
           <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/>
           <path d="M10 10l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
-        <input type="text" id="search-input" placeholder="Search properties or cities…" autocomplete="off" />
-        <button id="search-clear" title="Clear">✕</button>
+        <input type="text" id="search-input" placeholder="Search properties or citiesâ€¦" autocomplete="off" />
+        <button id="search-clear" title="Clear">âœ•</button>
         <div id="search-dropdown"></div>
       </div>
     </div>
@@ -392,7 +392,7 @@
         <option value="">All Tenants</option>
       </select>
     </div>
-    <div class="count-badge">Showing <span id="count">–</span> properties</div>
+    <div class="count-badge">Showing <span id="count">â€“</span> properties</div>
     <div class="layer-toggle-wrap">
       <span class="layer-toggle-label">Sold / Dead</span>
       <button id="layer-toggle" class="layer-switch" onclick="toggleSoldDeadLayer()" title="Toggle Sold & Dead properties">
@@ -404,18 +404,18 @@
 
 <div style="position:relative; flex:1; display:flex; flex-direction:column;">
   <div id="map"></div>
-  <div id="loading"><div class="spinner"></div><p>Loading property data…</p></div>
+  <div id="loading"><div class="spinner"></div><p>Loading property dataâ€¦</p></div>
   <div id="error-banner"></div>
 
 </div>
 
 <script>
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // CONFIG
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const SHEET_URL = "https://script.google.com/macros/s/AKfycbzt7MS2aMQ8YWCYooqjAeShpAPcz3u1dkfkPdvjiJ4wIxapUqXWWWt3WQ0WHvkmoWx-/exec";
 
-// Tenant → color map
+// Tenant â†’ color map
 const TENANT_COLORS = {
   "Circle K":                   "#e8334a",
   "7-Eleven":                   "#f7a44f",
@@ -452,7 +452,7 @@ const TENANT_COLORS = {
 
 const DEFAULT_COLOR = "#4f8ef7";
 
-// Tenant → custom PNG icon URL (add more as you get them)
+// Tenant â†’ custom PNG icon URL (add more as you get them)
 const TENANT_ICONS = {
   "Starbucks":              "https://www.dropbox.com/scl/fi/waejltasfzizazyu507tk/Starbucks.png?rlkey=q25x5nj3d2h18b4iamxavx4hb&raw=1",
   "7 Brew":                 "https://www.dropbox.com/scl/fi/pu8py0f2zku0n75c4d10s/7-Brew.png?rlkey=65l7lz9q7l81kzzdxib2vhojc&raw=1",
@@ -495,27 +495,27 @@ function tenantColor(tenant) {
   return DEFAULT_COLOR;
 }
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // MAP INIT
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const map = L.map('map', { zoomControl: true }).setView([38.5, -96.0], 5);
 
 L.tileLayer('https://{s}.tile.thunderforest.com/atlas/{z}/{x}/{y}.png?apikey=458764e6731a44a6a283cf4994b3e2fe', {
-  attribution: '© <a href="https://www.thunderforest.com/">Thunderforest</a>, © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  attribution: 'Â© <a href="https://www.thunderforest.com/">Thunderforest</a>, Â© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   maxZoom: 22
 }).addTo(map);
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // STATE
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let allData  = [];
 let soldData = [];
 let deadData = [];
 let markerLayer = L.layerGroup().addTo(map);
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // FETCH DATA
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function loadData() {
   showLoading(true);
   try {
@@ -541,9 +541,9 @@ async function loadData() {
   }
 }
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // ROBUST FIELD GETTER
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function getField(row, ...candidates) {
   for (const key of Object.keys(row)) {
     const norm = key.trim().toLowerCase();
@@ -556,9 +556,9 @@ function getField(row, ...candidates) {
   return '';
 }
 
-// ─────────────────────────────────────────────
-// PARSE LAT/LNG  — "33.213, -96.662"
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// PARSE LAT/LNG  â€” "33.213, -96.662"
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function parseLatLng(raw) {
   if (!raw) return null;
   const parts = String(raw).split(',').map(s => parseFloat(s.trim()));
@@ -568,9 +568,9 @@ function parseLatLng(raw) {
   return null;
 }
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // RENDER MARKERS
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderMarkers() {
   markerLayer.clearLayers();
   const filterVal = document.getElementById('tenant-filter').value.toLowerCase();
@@ -604,7 +604,7 @@ function renderMarkers() {
     const omLink     = getField(row, 'PROTRACK: Listing Link', 'OM', 'Marketing Packages Folder');
 
     // Use custom PNG if available, otherwise fall back to colored dot
-    const iconUrl = logoPath(tenant);
+    const iconUrl = TENANT_ICONS[tenant] || null;
     const icon = iconUrl
       ? L.icon({
           iconUrl: iconUrl,
@@ -630,18 +630,18 @@ function renderMarkers() {
     const marker = L.marker([ll.lat, ll.lng], { icon });
 
     const omHtml = omLink
-      ? `<a class="popup-link" href="${omLink}" target="_blank" rel="noopener">Open OM ↗</a>`
+      ? `<a class="popup-link" href="${omLink}" target="_blank" rel="noopener">Open OM â†—</a>`
       : '';
 
     marker.bindPopup(`
       <div class="popup-inner">
         <div class="popup-tenant-badge" style="background:${color};">${tenant || 'Unknown Tenant'}</div>
-        <div class="popup-title">${tenant ? tenant + (city ? ' — ' + city + (state ? ', ' + state : '') : '') : (address || 'Property')}</div>
-        <div class="popup-row"><span class="popup-key">Primary Agent</span><span class="popup-val">${agent || '—'}</span></div>
-        <div class="popup-row"><span class="popup-key">Tenant</span><span class="popup-val">${tenant || '—'}</span></div>
-        <div class="popup-row"><span class="popup-key">Address</span><span class="popup-val">${fullAddress || address || '—'}</span></div>
-        <div class="popup-row"><span class="popup-key">Active Date</span><span class="popup-val">${activeDate || '—'}</span></div>
-        <div class="popup-row"><span class="popup-key">Status</span><span class="popup-val">${status || '—'}</span></div>
+        <div class="popup-title">${tenant ? tenant + (city ? ' â€” ' + city + (state ? ', ' + state : '') : '') : (address || 'Property')}</div>
+        <div class="popup-row"><span class="popup-key">Primary Agent</span><span class="popup-val">${agent || 'â€”'}</span></div>
+        <div class="popup-row"><span class="popup-key">Tenant</span><span class="popup-val">${tenant || 'â€”'}</span></div>
+        <div class="popup-row"><span class="popup-key">Address</span><span class="popup-val">${fullAddress || address || 'â€”'}</span></div>
+        <div class="popup-row"><span class="popup-key">Active Date</span><span class="popup-val">${activeDate || 'â€”'}</span></div>
+        <div class="popup-row"><span class="popup-key">Status</span><span class="popup-val">${status || 'â€”'}</span></div>
         ${omHtml}
       </div>
     `, { maxWidth: 300 });
@@ -651,9 +651,9 @@ function renderMarkers() {
   });
 }
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // TENANT FILTER DROPDOWN
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function buildTenantFilter() {
   const sel = document.getElementById('tenant-filter');
   const currentVal = sel.value;
@@ -695,9 +695,9 @@ function buildTenantFilter() {
 
 
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // UI HELPERS
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function showLoading(on) {
   document.getElementById('loading').classList.toggle('hidden', !on);
 }
@@ -710,9 +710,9 @@ function showError(msg) {
 }
 
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // SEARCH
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let searchTimeout = null;
 
 function initSearch() {
@@ -786,13 +786,13 @@ async function fetchNominatim(q) {
     const results = await res.json();
     if (!results.length || !section.isConnected) return;
     const hdr = document.createElement('div'); hdr.className = 'search-section-header'; hdr.textContent = 'Places'; section.appendChild(hdr);
-    results.forEach(r => { const el = document.createElement('div'); el.className = 'search-result'; el.innerHTML = `<div class="search-result-name">📍 ${r.display_name.split(',').slice(0,3).join(', ')}</div>`; el.addEventListener('click', () => { map.flyTo([parseFloat(r.lat), parseFloat(r.lon)], 13, {duration:1}); document.getElementById('search-dropdown').classList.remove('visible'); document.getElementById('search-input').value = r.display_name.split(',')[0]; }); section.appendChild(el); });
+    results.forEach(r => { const el = document.createElement('div'); el.className = 'search-result'; el.innerHTML = `<div class="search-result-name">ðŸ“ ${r.display_name.split(',').slice(0,3).join(', ')}</div>`; el.addEventListener('click', () => { map.flyTo([parseFloat(r.lat), parseFloat(r.lon)], 13, {duration:1}); document.getElementById('search-dropdown').classList.remove('visible'); document.getElementById('search-input').value = r.display_name.split(',')[0]; }); section.appendChild(el); });
   } catch(e) {}
 }
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // SOLD/DEAD LAYERS
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let sheetLayers = { sold: L.layerGroup(), dead: L.layerGroup() };
 let soldDeadVisible = false;
 
@@ -820,19 +820,6 @@ function toggleSoldDeadLayer() {
   updateCount();
 }
 
-function logoPath(tenant) {
-  if (!tenant) return null;
-
-  const filename = tenant
-    .trim()
-    .toLowerCase()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-
-  return `./logos/${filename}.png`;
-}
-
 function buildSheetLayer(key) {
   sheetLayers[key].clearLayers();
   const filterVal = document.getElementById('tenant-filter').value.toLowerCase();
@@ -855,21 +842,21 @@ function buildSheetLayer(key) {
     let activeDate = activeDateRaw;
     if (activeDateRaw) { const d = new Date(activeDateRaw); if (!isNaN(d)) activeDate = (d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear(); }
     const fullAddress = [address, city, state].filter(Boolean).join(', ');
-    const iconUrl = logoPath(tenant);
+    const iconUrl = TENANT_ICONS[tenant] || null;
     const icon = iconUrl
       ? L.icon({ iconUrl, iconSize: [40, 40], iconAnchor: [20, 40], popupAnchor: [0, -42] })
       : L.divIcon({ className: '', html: `<div style="width:12px;height:12px;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.5);opacity:0.8;box-shadow:0 0 4px ${color}88;"></div>`, iconSize: [12,12], iconAnchor: [6,6], popupAnchor: [0,-8] });
     const marker = L.marker([ll.lat, ll.lng], { icon });
     marker._searchData = row;
-    const omHtml = omLink ? `<a class="popup-link" href="${omLink}" target="_blank" rel="noopener">Open OM ↗</a>` : '';
-    marker.bindPopup(`<div class="popup-inner"><div class="popup-title">${tenant ? tenant+(city?' — '+city+(state?', '+state:''):'') : (address||'Property')}</div><div style="display:inline-block;margin-bottom:8px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;background:${badge};color:#fff;">${label}</div><div class="popup-row"><span class="popup-key">Primary Agent</span><span class="popup-val">${agent||'—'}</span></div><div class="popup-row"><span class="popup-key">Address</span><span class="popup-val">${fullAddress||'—'}</span></div><div class="popup-row"><span class="popup-key">Active Date</span><span class="popup-val">${activeDate||'—'}</span></div><div class="popup-row"><span class="popup-key">Status</span><span class="popup-val">${status||'—'}</span></div>${omHtml}</div>`, { maxWidth: 300 });
+    const omHtml = omLink ? `<a class="popup-link" href="${omLink}" target="_blank" rel="noopener">Open OM â†—</a>` : '';
+    marker.bindPopup(`<div class="popup-inner"><div class="popup-title">${tenant ? tenant+(city?' â€” '+city+(state?', '+state:''):'') : (address||'Property')}</div><div style="display:inline-block;margin-bottom:8px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;background:${badge};color:#fff;">${label}</div><div class="popup-row"><span class="popup-key">Primary Agent</span><span class="popup-val">${agent||'â€”'}</span></div><div class="popup-row"><span class="popup-key">Address</span><span class="popup-val">${fullAddress||'â€”'}</span></div><div class="popup-row"><span class="popup-key">Active Date</span><span class="popup-val">${activeDate||'â€”'}</span></div><div class="popup-row"><span class="popup-key">Status</span><span class="popup-val">${status||'â€”'}</span></div>${omHtml}</div>`, { maxWidth: 300 });
     sheetLayers[key].addLayer(marker);
   });
 }
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // BOOT
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 initSearch();
 loadData();
 </script>
