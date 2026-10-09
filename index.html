@@ -452,54 +452,32 @@ const TENANT_COLORS = {
 
 const DEFAULT_COLOR = "#4f8ef7";
 
-// Logos are hosted beside this HTML in ./logos/.
-const LOGO_ALIASES = {
-  'advance-auto-parts': 'advance-auto',
-  'caribou': 'caribou-coffee',
-  '7-brew-coffee': '7-brew',
-  'salad-go': 'salad-and-go',
-  'mcdonald-s': 'mcdonalds',
-  'portillo-s': 'portillos'
+// Tenant → custom PNG icon URL (add more as you get them)
+const TENANT_ICONS = {
+  "Starbucks":              "https://www.dropbox.com/scl/fi/waejltasfzizazyu507tk/Starbucks.png?rlkey=q25x5nj3d2h18b4iamxavx4hb&raw=1",
+  "7 Brew":                 "https://www.dropbox.com/scl/fi/pu8py0f2zku0n75c4d10s/7-Brew.png?rlkey=65l7lz9q7l81kzzdxib2vhojc&raw=1",
+  "7 Brew Coffee":          "https://www.dropbox.com/scl/fi/pu8py0f2zku0n75c4d10s/7-Brew.png?rlkey=65l7lz9q7l81kzzdxib2vhojc&raw=1",
+  "7-Eleven":               "https://www.dropbox.com/scl/fi/zel98l1g7yonq7rd0ejgw/7-Eleven.png?rlkey=poec42ni43qodpamzwl8ue4zs&raw=1",
+  "Advance Auto":           "https://www.dropbox.com/scl/fi/3dyezgwgntkeygah6i9fs/Advance-Auto.png?rlkey=rtpf0ver7n8xqlrmxaha29ido&raw=1",
+  "Advance Auto Parts":     "https://www.dropbox.com/scl/fi/3dyezgwgntkeygah6i9fs/Advance-Auto.png?rlkey=rtpf0ver7n8xqlrmxaha29ido&raw=1",
+  "Aspen Dental":           "https://www.dropbox.com/scl/fi/yfgltqmp35d6274aegzts/Aspen-Dental.png?rlkey=7v0r5b4ld8vy74f16zk39jxm6&raw=1",
+  "Banfield Pet Hospital":  "https://www.dropbox.com/scl/fi/nlm9fgf1ocoiqgvoruml1/Banfield-Pet-Hospital.png?rlkey=loz6ntfxakahrewnvp7vrclsl&raw=1",
+  "Buffalo Wild Wings":     "https://www.dropbox.com/scl/fi/f9r26e09myn9uu4xtoqfv/Buffalo-Wild-Wings.png?rlkey=chfwy2rp3v68us5pj5xbe1qtu&raw=1",
+  "Caribou":                "https://www.dropbox.com/scl/fi/97tpm5rormo8mv8q93bup/Caribou-Coffee.png?rlkey=cggzse1ep9zgqpzuou6axc7fy&raw=1",
+  "Caribou Coffee":         "https://www.dropbox.com/scl/fi/97tpm5rormo8mv8q93bup/Caribou-Coffee.png?rlkey=cggzse1ep9zgqpzuou6axc7fy&raw=1",
+  "Chipotle":               "https://www.dropbox.com/scl/fi/egn5qkhobqhmxcrea7jso/Chipotle.png?rlkey=1r1gmukfo39bkit7d4p42d2jp&raw=1",
+  "Circle K":               "https://www.dropbox.com/scl/fi/x71wqlpk73jxtw1t73tk2/Circle-K.png?rlkey=n27kkfgjnmb31o86qn89lqnyq&raw=1",
+  "Kindercare":             "https://www.dropbox.com/scl/fi/1qfrr3qfn66xgn1cnquce/Kindercare.png?rlkey=6x4lhe9bdu47gu9cn47ekehqx&raw=1",
+  "Portillo's":            "https://www.dropbox.com/scl/fi/pzmzghz8148v8vza6ky2b/Portillo-s.png?rlkey=iofz2wxssop1fyzh7i62chw6b&raw=1",
+  "Salad & Go":             "https://www.dropbox.com/scl/fi/yk4irx4ejfhsjjs1j6w3v/Salad-Go.png?rlkey=0ctjb2h8kw6gkbt25y0bip0z9&raw=1",
+  "Salad and Go":           "https://www.dropbox.com/scl/fi/yk4irx4ejfhsjjs1j6w3v/Salad-Go.png?rlkey=0ctjb2h8kw6gkbt25y0bip0z9&raw=1",
+  "Tractor Supply":         "https://www.dropbox.com/scl/fi/222z24fc6h1nfa12nhibz/Tractor-Supply.png?rlkey=3klu76kieszgf9v2dm3k7e66w&raw=1",
+  "Shake Shack":            "https://www.dropbox.com/scl/fi/fk0bjd3vq7szkeie5s4m8/Shake-Shack.png?rlkey=x9dlmha1gp7s3ug5qh7n11bqp&raw=1",
+  "9063 Research Blvd":     "https://www.dropbox.com/scl/fi/jh286sug00hlvqiokcj5e/No-Logo.png?rlkey=escmi77fbtpwaazrk5mr2ruod&raw=1",
+  "Beaumont Plaza":          "https://www.dropbox.com/scl/fi/jh286sug00hlvqiokcj5e/No-Logo.png?rlkey=escmi77fbtpwaazrk5mr2ruod&raw=1",
+  "Black Bear Diner":        "https://www.dropbox.com/scl/fi/rhgg6h4bgyiqdxmv3cwlf/Black-Bear-Diner.png?rlkey=2pag4ndlkv4f714yxadv00dx2&raw=1",
+  "Texas Roadhouse":         "https://www.dropbox.com/scl/fi/qari9rpshma5ost25kq95/Texas-Roadhouse.png?rlkey=tfcazg4wq47njunrxadvt59fl&raw=1",
 };
-const logoChecks = new Map();
-function logoPath(tenant) {
-  if (!tenant) return null;
-  let name = String(tenant).trim().toLowerCase()
-    .replace(/&/g, ' and ')
-    .replace(/['’]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-  name = LOGO_ALIASES[name] || name;
-  return name ? './logos/' + name + '.png' : null;
-}
-function createTenantMarker(latlng, tenant, color, archived = false) {
-  const size = archived ? 12 : 14;
-  const fallback = L.divIcon({
-    className: '',
-    html: `<div style="width:${size}px;height:${size}px;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.7);opacity:${archived ? 0.8 : 1};box-shadow:0 0 6px ${color}99,0 2px 8px rgba(0,0,0,0.5);"></div>`,
-    iconSize: [size, size], iconAnchor: [size / 2, size / 2], popupAnchor: [0, -10]
-  });
-  const marker = L.marker(latlng, { icon: fallback });
-  const url = logoPath(tenant);
-  if (url) {
-    if (!logoChecks.has(url)) {
-      logoChecks.set(url, new Promise(resolve => {
-        const image = new Image();
-        image.onload = () => resolve(true);
-        image.onerror = () => resolve(false);
-        image.src = url;
-      }));
-    }
-    logoChecks.get(url).then(found => {
-      if (found) marker.setIcon(L.icon({
-        iconUrl: url, iconSize: [40, 40],
-        iconAnchor: [20, 40], popupAnchor: [0, -42]
-      }));
-    });
-  }
-  return marker;
-}
-
 
 function normalizeTenant(tenant) {
   if (!tenant) return tenant;
@@ -625,8 +603,31 @@ function renderMarkers() {
     const status     = getField(row, 'Status', 'Listing Status', 'Marketing Status');
     const omLink     = getField(row, 'PROTRACK: Listing Link', 'OM', 'Marketing Packages Folder');
 
-    // Automatically load a matching local PNG; keep a dot if missing.
-    const marker = createTenantMarker([ll.lat, ll.lng], tenant, color);
+    // Use custom PNG if available, otherwise fall back to colored dot
+    const iconUrl = logoPath(tenant);
+    const icon = iconUrl
+      ? L.icon({
+          iconUrl: iconUrl,
+          iconSize: [40, 40],
+          iconAnchor: [20, 40],
+          popupAnchor: [0, -42],
+        })
+      : L.divIcon({
+          className: '',
+          html: `<div style="
+            width:14px;height:14px;
+            background:${color};
+            border-radius:50%;
+            border:2.5px solid rgba(255,255,255,0.7);
+            box-shadow:0 0 6px ${color}99, 0 2px 8px rgba(0,0,0,0.5);
+            transition:transform 0.15s;
+          "></div>`,
+          iconSize: [14, 14],
+          iconAnchor: [7, 7],
+          popupAnchor: [0, -10],
+        });
+
+    const marker = L.marker([ll.lat, ll.lng], { icon });
 
     const omHtml = omLink
       ? `<a class="popup-link" href="${omLink}" target="_blank" rel="noopener">Open OM ↗</a>`
@@ -819,6 +820,19 @@ function toggleSoldDeadLayer() {
   updateCount();
 }
 
+function logoPath(tenant) {
+  if (!tenant) return null;
+
+  const filename = tenant
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return `./logos/${filename}.png`;
+}
+
 function buildSheetLayer(key) {
   sheetLayers[key].clearLayers();
   const filterVal = document.getElementById('tenant-filter').value.toLowerCase();
@@ -841,7 +855,11 @@ function buildSheetLayer(key) {
     let activeDate = activeDateRaw;
     if (activeDateRaw) { const d = new Date(activeDateRaw); if (!isNaN(d)) activeDate = (d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear(); }
     const fullAddress = [address, city, state].filter(Boolean).join(', ');
-    const marker = createTenantMarker([ll.lat, ll.lng], tenant, color, true);
+    const iconUrl = logoPath(tenant);
+    const icon = iconUrl
+      ? L.icon({ iconUrl, iconSize: [40, 40], iconAnchor: [20, 40], popupAnchor: [0, -42] })
+      : L.divIcon({ className: '', html: `<div style="width:12px;height:12px;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.5);opacity:0.8;box-shadow:0 0 4px ${color}88;"></div>`, iconSize: [12,12], iconAnchor: [6,6], popupAnchor: [0,-8] });
+    const marker = L.marker([ll.lat, ll.lng], { icon });
     marker._searchData = row;
     const omHtml = omLink ? `<a class="popup-link" href="${omLink}" target="_blank" rel="noopener">Open OM ↗</a>` : '';
     marker.bindPopup(`<div class="popup-inner"><div class="popup-title">${tenant ? tenant+(city?' — '+city+(state?', '+state:''):'') : (address||'Property')}</div><div style="display:inline-block;margin-bottom:8px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;background:${badge};color:#fff;">${label}</div><div class="popup-row"><span class="popup-key">Primary Agent</span><span class="popup-val">${agent||'—'}</span></div><div class="popup-row"><span class="popup-key">Address</span><span class="popup-val">${fullAddress||'—'}</span></div><div class="popup-row"><span class="popup-key">Active Date</span><span class="popup-val">${activeDate||'—'}</span></div><div class="popup-row"><span class="popup-key">Status</span><span class="popup-val">${status||'—'}</span></div>${omHtml}</div>`, { maxWidth: 300 });
